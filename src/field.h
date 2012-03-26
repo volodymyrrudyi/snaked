@@ -23,4 +23,7 @@ field_create(uint16_t width, uint16_t height);
 
 CellType
 random_cell(Field *field);
+
+void
+field_dispose(Field *field);
 #endif
