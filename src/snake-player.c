@@ -1,4 +1,4 @@
-#include "player.h"
+#include "snake-player.h"
 
 Player*
 create_player(const char* nickname, uint16_t color, uint16_t x,  uint16_t y,
@@ -33,5 +33,6 @@ void
 player_dispose(Player *player)
 {
     snake_dispose(player->snake_head);
+    free(player->nickname);
     free(player);
 }

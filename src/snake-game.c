@@ -1,17 +1,26 @@
-#include "game.h"
+#include "snake-game.h"
 
 Game*
-game_create()
+game_create(uint16_t width, uint16_t height)
 {
-    return NULL;
+    Game* new_game = (Game*)malloc(sizeof(Game));
+    new_game->player_count = 0;
+    new_game->players = NULL;
+    new_game->field = field_create(width, height);
+    return new_game;
 }
 
-void
-game_add_player(Game *game, Player *player)
+Player*
+game_add_player(Game *game, const char *nickname)
 {
     game->player_count += 1;
-    game->players = (Player*)realloc(game->players, sizeof(Player)*game->player_count);
-    memcpy(&game->players[game->player_count - 1], player, sizeof(Player));
+    game->players = (Player**)realloc(game->players, sizeof(Player*)*game->player_count);
+
+    game->players[game->player_count - 1] = (Player*)malloc(sizeof(Player));
+    game->players[game->player_count - 1]->nickname = (char*)malloc(sizeof(char) * strlen(nickname) + 1);
+    strcpy(game->players[game->player_count - 1]->nickname, nickname);
+
+    return game->players[game->player_count - 1];
 }
 
 void
@@ -19,11 +28,12 @@ game_dispose(Game* game)
 {
     for(int player = 0; player < game->player_count; player++)
     {
-        player_dispose(&game->players[player]);
+        player_dispose(game->players[player]);
         field_dispose(game->field);
     }
 
-    game_dispose(game);
+    free(game->players);
+    free(game);
 }
 
 void

@@ -1,6 +1,6 @@
 CFLAGS = -Werror -Wall -std=c99
 
-SOURCES = src/player.c src/snake-section.c src/main.c src/field.c src/game.c
+SOURCES = src/snake-player.c src/snake-section.c src/main.c src/snake-field.c src/snake-game.c
 all: $(SOURCES)
 	gcc $(CFLAGS) $(SOURCES) -o bin/snaked
 
