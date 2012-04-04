@@ -25,8 +25,8 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include "snake-game.h"
 #include "snake-log.h"
+#include "snake-server.h"
 
 #define DEFAULT_PORT 5100
 #define DEFAULT_HOST "localhost"
@@ -42,14 +42,8 @@ struct ProgramArgs_t {
 
 static const char *getopt_string = "p:h:n:d";
 
-// Handler to detect SIGIO
-void sigio_handler(int sig_no);
-
 int main(int argc, char **argv)
 {
-    int sock;
-    struct sockaddr_in server_addr;
-
     pid_t pid, sid;
     int opt = 0;
     program_args.port = DEFAULT_PORT;
@@ -116,31 +110,7 @@ int main(int argc, char **argv)
         close(STDIN_FILENO);
         close(STDOUT_FILENO);
     }
-    SNAKE_DEBUG("Server launched");
 
-    if ((sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
-    {
-        SNAKE_ERROR("Failed to open socket");
-        exit(EXIT_FAILURE);
-    }
-
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_addr.sin_port = htons(program_args.port);
-
-    if (bind(sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
-    {
-        SNAKE_ERROR("Can't bind");
-        exit(EXIT_FAILURE);
-    }
-
-    SNAKE_DEBUG("Entering event loop. Waiting for clients on port %d", program_args.port );
-    close(sock);
-    return 0;
-}
-
-void sigio_handler(int sig_no)
-{
-    SNAKE_DEBUG("Hi there! Accepted data from client");
+    return server_main(program_args.host_name, program_args.port, 
+		program_args.server_name);
 }
