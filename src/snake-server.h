@@ -25,6 +25,8 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <pthread.h>
+#include <signal.h>
 
 #include "snake-log.h"
 
