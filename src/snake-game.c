@@ -16,6 +16,11 @@
  */
 #include "snake-game.h"
 
+void
+game_init(void *arg)
+{
+}
+
 Game*
 game_create(uint16_t width, uint16_t height)
 {

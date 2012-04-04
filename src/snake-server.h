@@ -29,5 +29,6 @@
 #include <signal.h>
 
 #include "snake-log.h"
+#include "snake-game.h"
 
 int server_main(const char *host, int port, const char *server_name);

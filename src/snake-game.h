@@ -49,9 +49,10 @@ struct _Game
 
 /*
     Runs in separate process for each game.
+    Arg is list of file descriptors of each player
 */
 void
-game_init();
+game_init(void *arg);
 
 /*
     Creates new game with specified sizes of field.

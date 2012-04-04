@@ -38,6 +38,9 @@ static void
 enqueue(ClientData *client);
 static int 
 dequeue();
+
+static void
+spawn_game(int first_player, int second_player);
 	
 struct _ClientData
 {
@@ -142,16 +145,21 @@ accept_cb(int fd, short ev, void *arg)
 		buffer_error_cb,
 		client
 	);
-	
+	int second_player = -1;
 	pthread_mutex_lock(&queue_mutex);
 	if (queue_count == 0)
 	{
-		dequeue();
+		second_player =  dequeue();
 	} else
 	{
 		enqueue(client);
 	}	
 	pthread_mutex_unlock(&queue_mutex);
+	
+	if (second_player >= 0)
+	{
+		spawn_game(client_fd, second_player);
+	}
 
 	bufferevent_enable(client->buffer_event, EV_READ);
 }
@@ -222,4 +230,9 @@ dequeue()
 	
 	return sock;
 	
+}
+
+static void
+spawn_game(int first_player, int second_player)
+{
 }
