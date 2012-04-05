@@ -28,8 +28,8 @@
 #include <signal.h>
 
 #include "snake-log.h"
+#include "snake-proto.h"
 #include "snake-game.h"
 
-#define SNAKED_MAGIC 0xEC01BAD0
 
 int server_main(const char *host, int port, const char *server_name);

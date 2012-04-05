@@ -14,48 +14,36 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
-#ifndef __SNAKE_TYPES_H
-#define __SNAKE_TYPES_H
+#include "snake-proto.h"
 
-#include <stdint.h>
-
-typedef uint32_t BOOL;
-#define TRUE 1
-#define FALSE 0
-
-enum _ActionType
+BasePacket *base_packet_create(const char *data, uint64_t data_size)
 {
-    Movement,
-    Exit
-};
+	BasePacket *packet = (BasePacket*)
+		malloc(sizeof(BasePacket) + data_size);
+		
+	memcpy(packet + sizeof(BasePacket), data, data_size);
+	
+	return packet;
+}
 
-enum _Direction
+BOOL base_packet_parse(BasePacket *packet, char *buffer,
+	uint64_t *buffer_size)
 {
-    Left,
-    Right,
-    Up,
-    Down
-};
+	BOOL res = FALSE;
+	
+	return res;
+}
 
-enum _CellType
+NegotiationPacket*
+negotiation_packet_create(uint32_t port, uint32_t host_name_length,
+	char *host_name)
 {
-    Empty,
-    Fruit,
-    Wall,
-    Bone
-};
+	return NULL;
+}
 
-
-typedef struct _BasePacket BasePacket;
-typedef struct _NegotiationPacket NegotiationPacket;
-typedef struct _Game Game;
-typedef struct _Action Action;
-typedef struct _Field Field;
-typedef struct _Cell Cell;
-typedef struct _Player Player;
-typedef struct _SnakeSection SnakeSection;
-typedef enum _ActionType ActionType;
-typedef enum _CellType CellType;
-typedef enum _Direction Direction;
-
-#endif
+BOOL 
+negotiation_packet_parse(NegotiationPacket* packet, uint32_t *port,
+	uint32_t *host_name_length, char *host_name)
+{
+	return FALSE;
+}
