@@ -15,7 +15,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>
  */
 
-#include <event.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -30,5 +29,7 @@
 
 #include "snake-log.h"
 #include "snake-game.h"
+
+#define SNAKED_MAGIC 0xEC01BAD0
 
 int server_main(const char *host, int port, const char *server_name);

@@ -17,37 +17,32 @@
  
 #include "snake-server.h"
 
+typedef int ClientData;
+
+
+struct _DataPacket
+{
+	int snaked_magic;
+	int port;
+	char host[256];
+};
+typedef struct _DataPacket DataPacket;
+
 static void 
 setnblock(int fd);
 static void 
 terminate_handler(int sig);
 
 static void 
-accept_cb(int fd, short ev, void *arg);
-static void 
-buffer_write_cb(struct bufferevent *event, void *arg);
-static void 
-buffer_read_cb(struct bufferevent *event, void *arg);
-static void 
-buffer_error_cb(struct bufferevent *event, short what,
-	void *arg);
-
-typedef struct _ClientData ClientData;
+client_discovered_cb(int fd);
 
 static void 
-enqueue(ClientData *client);
+enqueue(ClientData client);
 static int 
 dequeue();
 
 static void
 spawn_game(int first_player, int second_player);
-	
-struct _ClientData
-{
-	struct bufferevent *buffer_event;
-	int socket;
-};
-
 
 
 /* Queue for storing clients that need new game */
@@ -61,13 +56,14 @@ int server_sock;
 int 
 server_main(const char *host, int port, const char *server_name)
 {
+	int broadcast = 1;
 	int reuse = 1;
+	size_t client_addr_len = sizeof(struct sockaddr_in);
+	struct sockaddr_in client_addr;
     struct sockaddr_in server_addr;
-    struct event accept_event;
     
 	SNAKE_DEBUG("Server launched");
 	signal(SIGINT, terminate_handler);
-	event_init();
 
     if ((server_sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
     {
@@ -95,28 +91,50 @@ server_main(const char *host, int port, const char *server_name)
 
 	setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &reuse,
 		sizeof(reuse));
-
-	setnblock(server_sock);
-	
-	event_set(&accept_event, server_sock, EV_READ|EV_PERSIST, accept_cb,
-            NULL);
-	event_add(&accept_event, NULL);
-	event_dispatch();
+	setsockopt(server_sock, SOL_SOCKET, SO_BROADCAST, &broadcast,
+		sizeof(broadcast));
 
     SNAKE_DEBUG("Entering event loop. Waiting for clients on port %d", 
 		port);
+		
+	DataPacket packet;
+	for(;;)
+	{
+		int amount  = recvfrom(server_sock, &packet, sizeof(packet),
+			0, (struct sockaddr*)&client_addr, &client_addr_len);
+			
+		SNAKE_DEBUG("Received packet");
+		if (amount < sizeof(packet))
+		{
+			SNAKE_ERROR("Received partial packet");
+			continue;
+		} else
+		{
+			if (packet.snaked_magic != SNAKED_MAGIC)
+			{
+				SNAKE_ERROR("Magic number not found");
+				continue;
+			} else
+			{
+				client_discovered_cb(0);
+				packet.port = port;
+				strcpy(packet.host, host);
+				sendto(server_sock, &packet, sizeof(packet), 0,(struct sockaddr*) &client_addr,
+					client_addr_len);
+			}
+		}
+	}
 	
     close(server_sock);
     return 0;
 }
 
 static void 
-accept_cb(int fd, short ev, void *arg)
+client_discovered_cb(int fd)
 {
 	int client_fd;
 	struct sockaddr_in client_addr;
 	socklen_t client_len = sizeof(client_addr);
-	ClientData *client;
 	SNAKE_DEBUG("Accepted connection");
 	
 
@@ -131,20 +149,6 @@ accept_cb(int fd, short ev, void *arg)
 
 	setnblock(client_fd);
 
-	client = calloc(1, sizeof(*client));
-	if (client == NULL)
-	{
-		SNAKE_ERROR("Failed to allocate memory for client data");
-		return;
-	}
-		
-	client->socket = client_fd;
-	client->buffer_event = bufferevent_new(client_fd,
-		buffer_read_cb,
-		buffer_write_cb,
-		buffer_error_cb,
-		client
-	);
 	int second_player = -1;
 	pthread_mutex_lock(&queue_mutex);
 	if (queue_count == 0)
@@ -152,7 +156,7 @@ accept_cb(int fd, short ev, void *arg)
 		second_player =  dequeue();
 	} else
 	{
-		enqueue(client);
+		enqueue(client_fd);
 	}	
 	pthread_mutex_unlock(&queue_mutex);
 	
@@ -160,24 +164,6 @@ accept_cb(int fd, short ev, void *arg)
 	{
 		spawn_game(client_fd, second_player);
 	}
-
-	bufferevent_enable(client->buffer_event, EV_READ);
-}
-
-static void 
-buffer_read_cb(struct bufferevent *event, void *arg)
-{
-}
-
-static void 
-buffer_write_cb(struct bufferevent *event, void *arg)
-{
-}
-
-static void buffer_error_cb(struct bufferevent *event, short what,
-	void *arg)
-{
-
 }
 
 static void 
@@ -197,7 +183,7 @@ setnblock(int fd)
 }
 
 static void 
-enqueue(ClientData *client)
+enqueue(ClientData client)
 {
 	if (queue_size == queue_count)
 	{
@@ -206,7 +192,7 @@ enqueue(ClientData *client)
 	}
 	
 	queue_count++;
-	memcpy(&queue[queue_count-1], client, sizeof(ClientData));
+	queue[queue_count - 1] = client;
 }
 
 static int 
@@ -219,7 +205,7 @@ dequeue()
 		sock = -1;
 	} else
 	{
-		sock = queue[0].socket;
+		sock = queue[0];
 		for(int i = 0; i < queue_count - 1; i++)
 		{
 			queue[i] = queue[i + 1];
