@@ -16,14 +16,30 @@
  */
 #include "snake-proto.h"
 
-BasePacket *base_packet_create(const char *data, uint64_t data_size)
+#define CLEAR_PACKET(x) memset(x, 0, sizeof(*x))
+
+BasePacket*
+base_packet_create(uint32_t type, const char *data, uint64_t data_size)
 {
 	BasePacket *packet = (BasePacket*)
 		malloc(sizeof(BasePacket) + data_size);
 		
-	memcpy(packet + sizeof(BasePacket), data, data_size);
+	base_packet_fill(packet, type, data, data_size);
+	
 	
 	return packet;
+}
+
+void
+base_packet_fill(BasePacket *packet, uint32_t type, 
+	const char *data, uint64_t data_size)
+{
+	packet->magic 		= SNAKE_MAGIC;
+	packet->version 	= SNAKE_VERSION;
+	packet->type 		= type;
+	packet->crc 		= 0;
+	packet->data_size 	= data_size;
+	memcpy(packet + sizeof(BasePacket), data, data_size);	
 }
 
 BOOL base_packet_parse(BasePacket *packet, char *buffer,
@@ -38,7 +54,14 @@ NegotiationPacket*
 negotiation_packet_create(uint32_t port, uint32_t host_name_length,
 	char *host_name)
 {
-	return NULL;
+	NegotiationPacket *packet = 
+		(NegotiationPacket*)malloc(sizeof(NegotiationPacket));
+		
+	CLEAR_PACKET(packet);
+	base_packet_fill(&packet->base_packet, PACKET_NEGOTIATION,
+		((char*)&packet->base_packet) + sizeof(BasePacket), 
+		sizeof(NegotiationPacket) - sizeof(BasePacket));
+	return packet;	
 }
 
 BOOL 

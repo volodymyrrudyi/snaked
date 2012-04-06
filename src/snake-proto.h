@@ -24,6 +24,7 @@
 #include "snake-types.h"
 
 #define SNAKE_MAGIC 0xDEADBEAF
+#define SNAKE_VERSION 1
 
 /* Packet types */
 #define PACKET_NEGOTIATION 	1
@@ -32,7 +33,6 @@
 /* Side types */
 #define SIDE_SERVER 0x01010101
 #define SIDE_CLIENT 0x10101010
-
 
 /* Base data packet */
 struct _BasePacket
@@ -46,14 +46,18 @@ struct _BasePacket
 
 struct _NegotiationPacket
 {
-	BasePacket packet;
+	BasePacket base_packet;
 	uint32_t side;
 	uint32_t port;
 	uint32_t host_name_length;
 };
 
 BasePacket*
-base_packet_create(const char *data, uint64_t data_size);
+base_packet_create(uint32_t type, const char *data, uint64_t data_size);
+
+void
+base_packet_fill(BasePacket *packet, uint32_t type, 
+	const char *data, uint64_t data_size);
 
 BOOL 
 base_packet_parse(BasePacket *packet, char *data,

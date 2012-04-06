@@ -24,6 +24,8 @@ terminate_handler(int sig);
 
 pthread_mutex_t queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+void spawn_game(int first_player, int second_player);
+
 int server_sock; 
 
 int 
@@ -68,6 +70,7 @@ server_main(const char *host, int port, const char *server_name)
     SNAKE_DEBUG("Entering event loop. Waiting for clients on port %d", 
 		port);
 		
+	spawn_game(0, 0);
     close(server_sock);
     return 0;
 }
@@ -77,4 +80,36 @@ terminate_handler(int sig)
 {
 	close(server_sock);
 	exit(EXIT_SUCCESS);
+}
+
+void spawn_game(int first_player, int second_player)
+{
+	int first_client_socket = 0;
+	int second_client_socket = 0;	
+	Game *game = game_create(128, 128);
+	char nickname_buffer[256];
+	// Socket init here
+	
+	SNAKE_DEBUG("Requesting nickname from first client");
+	write(first_client_socket, SNAKE_SERVER_GET_NICK, 
+		strlen(SNAKE_SERVER_GET_NICK) + 1);
+		
+	SNAKE_DEBUG("Reading nickname from first client");	
+	read(first_client_socket, nickname_buffer, strlen(nickname_buffer) + 1); 
+	
+	game_add_player(game, first_client_socket, nickname_buffer);
+		
+	SNAKE_DEBUG("Requesting nickname from first client");
+	write(second_client_socket, 
+	SNAKE_SERVER_GET_NICK, strlen(SNAKE_SERVER_GET_NICK) + 1);
+		
+	SNAKE_DEBUG("Reading nickname from first client");	
+	read( second_client_socket, nickname_buffer, 
+		strlen(nickname_buffer) + 1); 
+		
+	game_add_player(game, second_client_socket, nickname_buffer);
+	
+	pthread_t t;
+	
+	pthread_create(&t, NULL, game_init, (void*)game);
 }
