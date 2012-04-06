@@ -22,11 +22,15 @@
 static void 
 terminate_handler(int sig);
 
+static void
+read_handler(int fd, short what, void *arg);
+
 pthread_mutex_t queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 void spawn_game(int first_player, int second_player);
 
 int server_sock; 
+struct event read_event;
 
 int 
 server_main(const char *host, int port, const char *server_name)
@@ -34,7 +38,7 @@ server_main(const char *host, int port, const char *server_name)
 	int broadcast = 1;
 	int reuse = 1;
     struct sockaddr_in server_addr;
-    
+    event_init();
 	SNAKE_DEBUG("Server launched");
 	signal(SIGINT, terminate_handler);
 
@@ -70,7 +74,9 @@ server_main(const char *host, int port, const char *server_name)
     SNAKE_DEBUG("Entering event loop. Waiting for clients on port %d", 
 		port);
 		
-	spawn_game(0, 0);
+	event_set(&read_event, server_sock, EV_READ | EV_PERSIST, 
+		read_handler, &read_event);
+	
     close(server_sock);
     return 0;
 }
@@ -80,6 +86,12 @@ terminate_handler(int sig)
 {
 	close(server_sock);
 	exit(EXIT_SUCCESS);
+}
+
+static void
+read_handler(int fd, short what,  void *arg)
+{
+	SNAKE_DEBUG("Getting some data, we need to be prepared.");
 }
 
 void spawn_game(int first_player, int second_player)
