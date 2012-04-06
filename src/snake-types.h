@@ -46,8 +46,6 @@ enum _CellType
 };
 
 
-typedef struct _BasePacket BasePacket;
-typedef struct _NegotiationPacket NegotiationPacket;
 typedef struct _Game Game;
 typedef struct _Action Action;
 typedef struct _Field Field;

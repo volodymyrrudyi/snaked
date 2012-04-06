@@ -34,6 +34,9 @@
 #define SIDE_SERVER 0x01010101
 #define SIDE_CLIENT 0x10101010
 
+typedef struct _BasePacket BasePacket;
+typedef struct _NegotiationPacket NegotiationPacket;
+
 /* Base data packet */
 struct _BasePacket
 {
