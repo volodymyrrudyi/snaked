@@ -51,7 +51,8 @@ game_add_player(Game *game, int client_socket, const char *nickname)
 void
 game_dispose(Game* game)
 {
-    for(int player = 0; player < game->player_count; player++)
+	int player;
+    for(player = 0; player < game->player_count; player++)
     {
         player_dispose(game->players[player]);
         field_dispose(game->field);

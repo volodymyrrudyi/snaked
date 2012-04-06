@@ -19,6 +19,7 @@
 Field*
 field_create(uint16_t width, uint16_t height)
 {
+	int col;
     Field *field = (Field*)malloc(sizeof(Field));
     field->width = width;
     field->height = height;
@@ -36,7 +37,7 @@ field_create(uint16_t width, uint16_t height)
         return NULL;
     }
 
-    for(int col = 0; col < width; col++)
+    for(col = 0; col < width; col++)
     {
         field->cells[col] = (Cell*)malloc(sizeof(Cell)*height);
     }

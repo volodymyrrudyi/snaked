@@ -20,6 +20,8 @@ SnakeSection*
 snake_create(uint16_t x, uint16_t y, Direction direction)
 {
     SnakeSection *head = (SnakeSection*)malloc(sizeof(SnakeSection));
+    SnakeSection *last;
+    int sections;
     head->prev = NULL;
     head->next = NULL;
     head->direction = direction;
@@ -31,16 +33,17 @@ snake_create(uint16_t x, uint16_t y, Direction direction)
         return NULL;
     }
 
-    SnakeSection *last = head;
-    for(int sections = 0; sections < INITIAL_SNAKE_SIZE; sections++)
+    last = head;
+    for(sections = 0; sections < INITIAL_SNAKE_SIZE; sections++)
     {
         SnakeSection *section = (SnakeSection*)malloc(sizeof(SnakeSection));
         if (section == NULL)
         {
+			int i;
             SNAKE_ERROR("Can't allocate memory for snake section. \
                     Deallocating %d sections", sections);
             last = head;
-            for(int i = 0; i < sections; i++)
+            for(i = 0; i < sections; i++)
             {
                 SnakeSection *tmp = last;
                 last = last->next;
