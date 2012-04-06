@@ -20,8 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <memory.h>
-
-#include "snake-types.h"
+#include <stdint.h>
 
 #define SNAKE_MAGIC 0xDEADBEAF
 #define SNAKE_VERSION 1
@@ -33,6 +32,10 @@
 /* Side types */
 #define SIDE_SERVER 0x01010101
 #define SIDE_CLIENT 0x10101010
+
+#define BOOL uint32_t 
+#define TRUE 1
+#define FALSE 0
 
 typedef struct _BasePacket BasePacket;
 typedef struct _NegotiationPacket NegotiationPacket;
