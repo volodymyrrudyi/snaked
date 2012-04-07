@@ -51,8 +51,6 @@ const char *server_host_name;
 int 
 server_main(const char *host, int port, const char *server_name)
 {
-	int broadcast = 1;
-	int reuse = 1;
     struct sockaddr_in server_addr;
     server_port = port;
     server_host_name = host;
@@ -107,14 +105,9 @@ terminate_handler(int sig)
 static void
 read_handler(int fd, short what,  void *arg)
 {
-	int client_sock; 
 	struct sockaddr_in client_addr;
 	uint32_t client_addr_len;
-	int broadcast = 1;
-	int reuse = 1;
 	NegotiationPacket *packet;
-	int buf;
-	int packet_size;
 	SNAKE_DEBUG("Received notice from client");
 		packet = negotiation_packet_create(server_port + 2, 
 		strlen(server_host_name) + 1, server_host_name);
@@ -166,8 +159,10 @@ game_accept_handler(int fd, short what, void *arg)
 	struct sockaddr_in client_addr;
 	uint32_t addr_len;
 	SNAKE_DEBUG("Client connected");
-	int player_socket = accept(fd, (struct sockaddr*)&client_addr, 
+	accept(fd, (struct sockaddr*)&client_addr, 
 		&addr_len);
+		
+	spawn_game(0, 0);
 }
 
 static void
@@ -226,4 +221,6 @@ setnonblock(int fd)
   flags = fcntl(fd, F_GETFL);
   flags |= O_NONBLOCK;
   fcntl(fd, F_SETFL, flags);
+  
+  return flags;
 }
