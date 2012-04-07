@@ -42,7 +42,7 @@ negotiation_packet_create(uint32_t port, uint32_t host_name_length,
 	const char *host_name)
 {
 	NegotiationPacket *packet = 
-		(NegotiationPacket*)malloc(sizeof(NegotiationPacket));
+		(NegotiationPacket*)malloc(sizeof(NegotiationPacket) + host_name_length + 1);
 		
 	CLEAR_PACKET(packet);
 	packet->host_name_length = host_name_length;
@@ -50,6 +50,7 @@ negotiation_packet_create(uint32_t port, uint32_t host_name_length,
 		GET_NEGOTIATION_PACKET_SIZE(packet) - sizeof(BasePacket));
 
 	strcpy((char*)(packet) + sizeof(NegotiationPacket), host_name);
+	packet->port = port;
 	
 	return packet;	
 }

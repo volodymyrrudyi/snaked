@@ -25,14 +25,25 @@ terminate_handler(int sig);
 static void
 read_handler(int fd, short what, void *arg);
 
+static void
+game_accept_handler(int fd, short what, void *arg);
+
 pthread_mutex_t queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-void spawn_game(int first_player, int second_player);
+static void 
+spawn_game(int first_player, int second_player);
+
+static void
+init_game_socket();
+
+int 
+setnonblock(int fd);
 
 int server_sock; 
 int game_sock;
 struct event read_event;
 struct event game_accept_event;
+struct event game_read_event;
 
 int server_port;
 const char *server_host_name;
@@ -47,6 +58,7 @@ server_main(const char *host, int port, const char *server_name)
     server_host_name = host;
     event_init();
 	SNAKE_DEBUG("Server launched");
+	init_game_socket();
 	signal(SIGINT, terminate_handler);
 
     if ((server_sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
@@ -125,8 +137,9 @@ read_handler(int fd, short what,  void *arg)
 	
 	sendto(client_sock, packet, GET_NEGOTIATION_PACKET_SIZE(packet), 0, 
 		(struct sockaddr *)&client_addr, sizeof(client_addr)); 
-		
+	
 	close(client_sock);
+//	free(packet);
 }
 
 void spawn_game(int first_player, int second_player)
@@ -159,4 +172,68 @@ void spawn_game(int first_player, int second_player)
 	pthread_t t;
 	
 	pthread_create(&t, NULL, game_init, (void*)game);
+}
+
+static void
+game_accept_handler(int fd, short what, void *arg)
+{
+	SNAKE_DEBUG("Client connected");
+}
+
+static void
+init_game_socket()
+{
+    struct sockaddr_in game_addr;
+    struct hostent* host_info_ptr; 
+    long host_address;
+    int reuse  = 1;
+	SNAKE_DEBUG("Creating game socket");
+    if ((game_sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
+    {
+        SNAKE_ERROR("Failed to open socket");
+        exit(EXIT_FAILURE);
+    }
+        
+    host_info_ptr = gethostbyname(server_host_name);
+    memcpy(&host_address, host_info_ptr->h_addr, 
+		host_info_ptr->h_length);
+		
+    memset(&game_addr, 0, sizeof(game_addr));
+    game_addr.sin_family = AF_INET;
+    game_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    game_addr.sin_port = htons(server_port + 2);
+   
+    if (bind(game_sock, (struct sockaddr *)&game_addr,
+		sizeof(game_addr)) < 0)
+    {
+        SNAKE_ERROR("Can't bind");
+        exit(EXIT_FAILURE);
+    }
+    
+     if (listen(game_sock, 5) < 0)
+    {
+        SNAKE_ERROR("Can't bind");
+        exit(EXIT_FAILURE);
+    }
+    
+    setsockopt(game_sock, SOL_SOCKET, SO_REUSEADDR, &reuse,
+		sizeof(reuse));
+		 
+    setnonblock(game_sock);
+    SNAKE_DEBUG("Waiting for game connections on %s:%d",  server_host_name, server_port  + 2);
+    event_set(&game_accept_event, game_sock, 
+		EV_READ | EV_PERSIST, game_accept_handler, 
+		&game_accept_event);
+		
+	event_add(&game_accept_event, NULL);
+}
+
+int 
+setnonblock(int fd)
+{
+  int flags;
+
+  flags = fcntl(fd, F_GETFL);
+  flags |= O_NONBLOCK;
+  fcntl(fd, F_SETFL, flags);
 }
