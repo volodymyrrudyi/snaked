@@ -71,7 +71,7 @@ base_packet_parse(BasePacket *packet, char *data,
 
 NegotiationPacket*
 negotiation_packet_create(uint32_t port, uint32_t host_name_length,
-	char *host_name);
+	const char *host_name);
 	
 BOOL 
 negotiation_packet_parse(NegotiationPacket *packet, uint32_t *port,

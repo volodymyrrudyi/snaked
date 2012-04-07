@@ -32,12 +32,17 @@ void spawn_game(int first_player, int second_player);
 int server_sock; 
 struct event read_event;
 
+int server_port;
+const char *server_host_name;
+
 int 
 server_main(const char *host, int port, const char *server_name)
 {
 	int broadcast = 1;
 	int reuse = 1;
     struct sockaddr_in server_addr;
+    server_port = port;
+    server_host_name = host;
     event_init();
 	SNAKE_DEBUG("Server launched");
 	signal(SIGINT, terminate_handler);
@@ -59,17 +64,11 @@ server_main(const char *host, int port, const char *server_name)
         SNAKE_ERROR("Can't bind");
         exit(EXIT_FAILURE);
     }
-    
-    if (listen(server_sock, 5) < 0)
-    {
-      SNAKE_ERROR("Can't listen");
-      return 1;
-    }
 
-	setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &reuse,
-		sizeof(reuse));
-	setsockopt(server_sock, SOL_SOCKET, SO_BROADCAST, &broadcast,
-		sizeof(broadcast));
+//	setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &reuse,
+//		sizeof(reuse));
+//	setsockopt(server_sock, SOL_SOCKET, SO_BROADCAST, &broadcast,
+//		sizeof(broadcast));
 
     SNAKE_DEBUG("Entering event loop. Waiting for clients on port %d", 
 		port);
@@ -77,6 +76,9 @@ server_main(const char *host, int port, const char *server_name)
 	event_set(&read_event, server_sock, EV_READ | EV_PERSIST, 
 		read_handler, &read_event);
 	
+	event_add(&read_event, NULL);
+	event_dispatch();
+	for(;;);
     close(server_sock);
     return 0;
 }
@@ -91,7 +93,37 @@ terminate_handler(int sig)
 static void
 read_handler(int fd, short what,  void *arg)
 {
-	SNAKE_DEBUG("Getting some data, we need to be prepared.");
+	int client_sock; 
+	struct sockaddr_in client_addr;
+	int broadcast = 1;
+	int reuse = 1;
+	NegotiationPacket *packet;
+	int buf;
+	SNAKE_DEBUG("Received notice from client.");
+	read(fd, &buf, sizeof(buf));
+	if ((client_sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
+    {
+        SNAKE_ERROR("Failed to open socket");
+        exit(EXIT_FAILURE);
+    }
+
+    memset(&client_addr, 0, sizeof(client_addr));
+    client_addr.sin_family = AF_INET;
+    client_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    client_addr.sin_port = htons(server_port + 1);
+    
+    setsockopt(client_sock, SOL_SOCKET, SO_REUSEADDR, &reuse,
+		sizeof(reuse));
+	setsockopt(client_sock, SOL_SOCKET, SO_BROADCAST, &broadcast,
+		sizeof(broadcast));
+		
+	packet = negotiation_packet_create(server_port+ 2, 
+		strlen(server_host_name) + 1, server_host_name);
+		
+	sendto(client_sock, &reuse, sizeof(reuse), 0, 
+		(struct sockaddr *)&client_addr, sizeof(client_addr)); 
+	
+	close(client_sock);
 }
 
 void spawn_game(int first_player, int second_player)

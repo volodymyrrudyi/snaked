@@ -49,7 +49,7 @@ int main(int argc, char **argv)
     program_args.port = DEFAULT_PORT;
     program_args.host_name = DEFAULT_HOST;
     program_args.server_name = DEFAULT_NAME;
-    program_args.daemonize = 1;
+    program_args.daemonize = 0;
 
     opt = getopt( argc, argv, getopt_string);
     while( opt != -1 ) {

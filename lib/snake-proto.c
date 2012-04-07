@@ -52,7 +52,7 @@ BOOL base_packet_parse(BasePacket *packet, char *buffer,
 
 NegotiationPacket*
 negotiation_packet_create(uint32_t port, uint32_t host_name_length,
-	char *host_name)
+	const char *host_name)
 {
 	NegotiationPacket *packet = 
 		(NegotiationPacket*)malloc(sizeof(NegotiationPacket));
