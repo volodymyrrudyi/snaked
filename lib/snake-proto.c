@@ -44,7 +44,7 @@ negotiation_packet_create(uint32_t port, uint32_t host_name_length,
 	NegotiationPacket *packet = 
 		(NegotiationPacket*)malloc(sizeof(NegotiationPacket) + host_name_length + 1);
 		
-	CLEAR_PAC  KET(packet);
+	CLEAR_PACKET(packet);
 	packet->host_name_length = host_name_length;
 	base_packet_fill(&packet->base_packet, PACKET_NEGOTIATION,
 		GET_NEGOTIATION_PACKET_SIZE(packet) - sizeof(BasePacket));

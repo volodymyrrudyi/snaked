@@ -177,7 +177,11 @@ void spawn_game(int first_player, int second_player)
 static void
 game_accept_handler(int fd, short what, void *arg)
 {
+	struct sockaddr_in client_addr;
+	uint32_t addr_len;
 	SNAKE_DEBUG("Client connected");
+	int player_socket = accept(fd, (struct sockaddr*)&client_addr, 
+		&addr_len);
 }
 
 static void
