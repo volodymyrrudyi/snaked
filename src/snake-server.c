@@ -109,37 +109,23 @@ read_handler(int fd, short what,  void *arg)
 {
 	int client_sock; 
 	struct sockaddr_in client_addr;
+	uint32_t client_addr_len;
 	int broadcast = 1;
 	int reuse = 1;
 	NegotiationPacket *packet;
 	int buf;
 	int packet_size;
-	SNAKE_DEBUG("Received notice from client.");
-	read(fd, &buf, sizeof(buf));
-	if ((client_sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
-    {
-        SNAKE_ERROR("Failed to open socket");
-        exit(EXIT_FAILURE);
-    }
-
-    memset(&client_addr, 0, sizeof(client_addr));
-    client_addr.sin_family = AF_INET;
-    client_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    client_addr.sin_port = htons(server_port + 1);
-    
-    setsockopt(client_sock, SOL_SOCKET, SO_REUSEADDR, &reuse,
-		sizeof(reuse));
-	setsockopt(client_sock, SOL_SOCKET, SO_BROADCAST, &broadcast,
-		sizeof(broadcast));
-		
-	packet = negotiation_packet_create(server_port + 2, 
+	SNAKE_DEBUG("Received notice from client");
+		packet = negotiation_packet_create(server_port + 2, 
 		strlen(server_host_name) + 1, server_host_name);
+	recvfrom(fd, packet, GET_NEGOTIATION_PACKET_SIZE(packet), 0, 
+		(struct sockaddr *)&client_addr, &client_addr_len); 
 	
-	sendto(client_sock, packet, GET_NEGOTIATION_PACKET_SIZE(packet), 0, 
+	SNAKE_DEBUG("Sending negotiation packet to client");	
+	
+    sendto(fd, packet, GET_NEGOTIATION_PACKET_SIZE(packet), 0, 
 		(struct sockaddr *)&client_addr, sizeof(client_addr)); 
 	
-	close(client_sock);
-//	free(packet);
 }
 
 void spawn_game(int first_player, int second_player)
