@@ -17,10 +17,15 @@
 #ifndef __SNAKE_PROTO_H
 #define __SNAKE_PROTO_H
 
-#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <string.h>
-#include <memory.h>
-#include <stdint.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include "snake-log.h"
 
@@ -30,6 +35,7 @@
 /* Packet types */
 #define PACKET_NEGOTIATION 	1
 #define PACKET_CONTROL 		2
+#define PACKET_CLIENT_INFO 	4
 
 /* Side types */
 #define SIDE_SERVER 0x01010101
@@ -40,44 +46,47 @@
 #define FALSE 0
 
 #define SNAKE_HOST_MAX 256
+#define SNAKE_PACKET_MAX 1024
 
-#define GET_NEGOTIATION_PACKET_SIZE(x) sizeof(NegotiationPacket) + x->host_name_length + 1
-
-typedef struct _BasePacket BasePacket;
 typedef struct _NegotiationPacket NegotiationPacket;
-
-/* Base data packet */
-struct _BasePacket
-{
-	uint32_t magic; 	/* Magic number to identify Snaked packets */
-	uint32_t version;	/* Version of protocol */
-	uint32_t type; 		/* Packet type */
-	uint64_t crc; 		/* Control summ of packet including data */
-	uint64_t data_size; /* Data size in bytes */
-};
+typedef struct _ClientInfoPacket ClientInfoPacket;
 
 struct _NegotiationPacket
 {
-	BasePacket base_packet;
-	uint32_t side;
 	uint32_t port;
-	uint32_t host_name_length;
+	char *host_name;
 };
 
-void
-base_packet_fill(BasePacket *packet, uint32_t type, 
-	uint64_t data_size);
-
-BOOL 
-base_packet_parse(BasePacket *packet, char *data,
-	uint64_t *data_size);
+struct _ClientInfoPacket
+{
+	uint32_t color;
+	char *nickname;
+};
 
 NegotiationPacket*
-negotiation_packet_create(uint32_t port, uint32_t host_name_length,
-	const char *host_name);
-	
-BOOL 
-negotiation_packet_parse(NegotiationPacket *packet, uint32_t *port,
-	char *host_name);
+negotiation_packet_create(uint32_t port, const char *host_name);
+
+NegotiationPacket*
+negotiation_packet_read(int fd, struct sockaddr_in *sender_addr);
+
+void
+negotiation_packet_write(int fd, NegotiationPacket* packet, 
+	struct sockaddr_in *receiver_addr);
+
+void
+negotiation_packet_destroy(NegotiationPacket *packet);
+
+ClientInfoPacket*
+client_info_packet_create(uint32_t color, const char *nickname);
+
+ClientInfoPacket*
+client_info_packet_read(int fd, struct sockaddr_in *sender_addr);
+
+void
+client_info_packet_write(int fd, ClientInfoPacket* packet, 
+	struct sockaddr_in *receiver_addr);
+
+void
+client_info_packet_destroy(ClientInfoPacket *packet);
 
 #endif

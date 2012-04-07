@@ -108,17 +108,20 @@ read_handler(int fd, short what,  void *arg)
 	struct sockaddr_in client_addr;
 	uint32_t client_addr_len;
 	NegotiationPacket *packet;
+	int ping_buf;
 	SNAKE_DEBUG("Received notice from client");
-		packet = negotiation_packet_create(server_port + 2, 
-		strlen(server_host_name) + 1, server_host_name);
-	recvfrom(fd, packet, GET_NEGOTIATION_PACKET_SIZE(packet), 0, 
+
+	recvfrom(fd, &ping_buf, sizeof(ping_buf), 0, 
 		(struct sockaddr *)&client_addr, &client_addr_len); 
 	
 	SNAKE_DEBUG("Sending negotiation packet to client");	
+		
+	packet = negotiation_packet_create(server_port + 2, server_host_name);
+	negotiation_packet_write(fd, packet, &client_addr);
 	
-    sendto(fd, packet, GET_NEGOTIATION_PACKET_SIZE(packet), 0, 
-		(struct sockaddr *)&client_addr, sizeof(client_addr)); 
+	SNAKE_DEBUG("Sending negotiation packet to client");
 	
+	free(packet);
 }
 
 void spawn_game(int first_player, int second_player)
