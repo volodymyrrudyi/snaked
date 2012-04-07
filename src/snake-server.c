@@ -30,7 +30,9 @@ pthread_mutex_t queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 void spawn_game(int first_player, int second_player);
 
 int server_sock; 
+int game_sock;
 struct event read_event;
+struct event game_accept_event;
 
 int server_port;
 const char *server_host_name;
@@ -99,6 +101,7 @@ read_handler(int fd, short what,  void *arg)
 	int reuse = 1;
 	NegotiationPacket *packet;
 	int buf;
+	int packet_size;
 	SNAKE_DEBUG("Received notice from client.");
 	read(fd, &buf, sizeof(buf));
 	if ((client_sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
@@ -117,12 +120,12 @@ read_handler(int fd, short what,  void *arg)
 	setsockopt(client_sock, SOL_SOCKET, SO_BROADCAST, &broadcast,
 		sizeof(broadcast));
 		
-	packet = negotiation_packet_create(server_port+ 2, 
+	packet = negotiation_packet_create(server_port + 2, 
 		strlen(server_host_name) + 1, server_host_name);
-		
-	sendto(client_sock, &reuse, sizeof(reuse), 0, 
-		(struct sockaddr *)&client_addr, sizeof(client_addr)); 
 	
+	sendto(client_sock, packet, GET_NEGOTIATION_PACKET_SIZE(packet), 0, 
+		(struct sockaddr *)&client_addr, sizeof(client_addr)); 
+		
 	close(client_sock);
 }
 

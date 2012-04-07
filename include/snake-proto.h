@@ -22,6 +22,8 @@
 #include <memory.h>
 #include <stdint.h>
 
+#include "snake-log.h"
+
 #define SNAKE_MAGIC 0xDEADBEAF
 #define SNAKE_VERSION 1
 
@@ -36,6 +38,10 @@
 #define BOOL uint32_t 
 #define TRUE 1
 #define FALSE 0
+
+#define SNAKE_HOST_MAX 256
+
+#define GET_NEGOTIATION_PACKET_SIZE(x) sizeof(NegotiationPacket) + x->host_name_length + 1
 
 typedef struct _BasePacket BasePacket;
 typedef struct _NegotiationPacket NegotiationPacket;
@@ -58,12 +64,9 @@ struct _NegotiationPacket
 	uint32_t host_name_length;
 };
 
-BasePacket*
-base_packet_create(uint32_t type, const char *data, uint64_t data_size);
-
 void
 base_packet_fill(BasePacket *packet, uint32_t type, 
-	const char *data, uint64_t data_size);
+	uint64_t data_size);
 
 BOOL 
 base_packet_parse(BasePacket *packet, char *data,
@@ -75,6 +78,6 @@ negotiation_packet_create(uint32_t port, uint32_t host_name_length,
 	
 BOOL 
 negotiation_packet_parse(NegotiationPacket *packet, uint32_t *port,
-	uint32_t *host_name_length, char *host_name);
+	char *host_name);
 
 #endif

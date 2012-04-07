@@ -18,28 +18,15 @@
 
 #define CLEAR_PACKET(x) memset(x, 0, sizeof(*x))
 
-BasePacket*
-base_packet_create(uint32_t type, const char *data, uint64_t data_size)
-{
-	BasePacket *packet = (BasePacket*)
-		malloc(sizeof(BasePacket) + data_size);
-		
-	base_packet_fill(packet, type, data, data_size);
-	
-	
-	return packet;
-}
-
 void
-base_packet_fill(BasePacket *packet, uint32_t type, 
-	const char *data, uint64_t data_size)
+base_packet_fill(BasePacket *packet, uint32_t type, uint64_t data_size)
 {
 	packet->magic 		= SNAKE_MAGIC;
 	packet->version 	= SNAKE_VERSION;
 	packet->type 		= type;
 	packet->crc 		= 0;
 	packet->data_size 	= data_size;
-	memcpy(packet + sizeof(BasePacket), data, data_size);	
+
 }
 
 BOOL base_packet_parse(BasePacket *packet, char *buffer,
@@ -58,15 +45,20 @@ negotiation_packet_create(uint32_t port, uint32_t host_name_length,
 		(NegotiationPacket*)malloc(sizeof(NegotiationPacket));
 		
 	CLEAR_PACKET(packet);
+	packet->host_name_length = host_name_length;
 	base_packet_fill(&packet->base_packet, PACKET_NEGOTIATION,
-		((char*)&packet->base_packet) + sizeof(BasePacket), 
-		sizeof(NegotiationPacket) - sizeof(BasePacket));
+		GET_NEGOTIATION_PACKET_SIZE(packet) - sizeof(BasePacket));
+
+	strcpy((char*)(packet) + sizeof(NegotiationPacket), host_name);
+	
 	return packet;	
 }
 
 BOOL 
-negotiation_packet_parse(NegotiationPacket* packet, uint32_t *port,
-	uint32_t *host_name_length, char *host_name)
+negotiation_packet_parse(NegotiationPacket* packet, uint32_t *port, 
+	char *host_name)
 {
-	return FALSE;
+	*port = packet->port;
+	strcpy(host_name, (char*)(packet) + sizeof(NegotiationPacket));
+	return TRUE;
 }
