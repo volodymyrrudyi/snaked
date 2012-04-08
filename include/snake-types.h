@@ -23,9 +23,20 @@ typedef uint32_t BOOL;
 #define TRUE 1
 #define FALSE 0
 
+/*
+ * Describes type of the update
+ */
 enum _UpdateType
 {
-	RecalculatePosition
+	PlayerRecalculatePosition,	/* Called on timer or request from server */
+	PlayerChangedDirection, 	/* Called when some player changed direction */
+	PlayerCollectedFruit, 		/* Called when player collected fruit */
+	PlayerCollectedBone, 		/* Called when player collected bone of other player */
+	PlayerCrashedIntoWall, 		/* Called when player crashed into wall */
+	PlayerSyncPosition,			/* Called when server forces to sync player position */
+	PlayerSyncPoints, 			/* Called when server wants to update stats */
+	FieldSyncSituation,			/* Called when server wants to sync status of field cells */
+	GameUpdateState 			/* Called when game state was changed */
 };
 
 enum _Direction

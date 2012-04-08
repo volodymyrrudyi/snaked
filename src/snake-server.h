@@ -36,4 +36,4 @@
 #define SNAKE_SERVER_GET_COLOR "GET: color"
 
 
-int server_main(const char *host, int port, const char *server_name);
+

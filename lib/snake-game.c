@@ -39,6 +39,6 @@ game_dispose(Game* game)
 }
 
 void
-game_update(Game *game, Player *player, UpdateType type, void *args)
+game_update(Game *game, UpdateType type, void *args)
 {
 }

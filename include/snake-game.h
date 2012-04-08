@@ -32,7 +32,13 @@
 struct _Game
 {
     Field *field;
-    List *players;
+    List *players;  
+	/*
+		Callback that is called every time game updated according to 
+		specified update type and given args. Should be used in 
+		presentation layer to update screen/etc
+	*/
+	void (*game_updated_cb)(Game*, Player*, UpdateType, void*);
 };
 
 /*
@@ -58,7 +64,6 @@ game_dispose(Game* game);
     Callback that is called every time game need to update
 */
 void
-game_update(Game *game, Player *player, UpdateType type, void *args);
-
+game_update(Game *game, UpdateType type, void *args);
 
 #endif
