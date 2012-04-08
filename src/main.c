@@ -26,6 +26,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <snake-log.h>
+#include <snake-proto.h>
 #include "snake-server.h"
 
 #define DEFAULT_PORT 5100
@@ -33,19 +34,10 @@
 #define DEFAULT_NAME "snaked"
 
 static void 
-spawn_game(int first_player, int second_player);
-
-static void 
 terminate_handler(int sig);
 
 static void
 read_handler(int fd, short what, void *arg);
-
-static void
-game_accept_handler(int fd, short what, void *arg);
-
-static void
-init_game_socket();
 
 static int 
 server_main(const char *host, int port, const char *server_name);
@@ -59,19 +51,9 @@ struct ProgramArgs_t {
 } program_args;
 
 static const char *getopt_string = "p:h:n:d";
-pthread_mutex_t queue_mutex = PTHREAD_MUTEX_INITIALIZER;
-int 
-setnonblock(int fd);
-
-const char *server_host_name;
-int server_port;
 int server_sock; 
-int game_sock;
 struct event read_event;
-struct event game_accept_event;
 struct event game_read_event;
-
-
 
 int main(int argc, char **argv)
 {
@@ -150,11 +132,9 @@ int
 server_main(const char *host, int port, const char *server_name)
 {
     struct sockaddr_in server_addr;
-    server_port = port;
-    server_host_name = host;
     event_init();
 	SNAKE_DEBUG("Server launched");
-	init_game_socket();
+	init_game_socket(host, port);
 	signal(SIGINT, terminate_handler);
 
     if ((server_sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
@@ -166,7 +146,7 @@ server_main(const char *host, int port, const char *server_name)
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_addr.sin_port = htons(port);
+    server_addr.sin_port = htons(SNAKE_PORT);
 
     if (bind(server_sock, (struct sockaddr *)&server_addr,
 		sizeof(server_addr)) < 0)
@@ -174,11 +154,6 @@ server_main(const char *host, int port, const char *server_name)
         SNAKE_ERROR("Can't bind");
         exit(EXIT_FAILURE);
     }
-
-//	setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &reuse,
-//		sizeof(reuse));
-//	setsockopt(server_sock, SOL_SOCKET, SO_BROADCAST, &broadcast,
-//		sizeof(broadcast));
 
     SNAKE_DEBUG("Entering event loop. Waiting for clients on port %d", 
 		port);
@@ -214,90 +189,10 @@ read_handler(int fd, short what,  void *arg)
 	
 	SNAKE_DEBUG("Sending negotiation packet to client");	
 		
-	packet = negotiation_packet_create(server_port + 2, server_host_name);
+	packet = negotiation_packet_create(program_args.port, program_args.host_name);
 	negotiation_packet_write(fd, packet, &client_addr);
 	
 	SNAKE_DEBUG("Sending negotiation packet to client");
 	
 	free(packet);
 }
-
-void spawn_game(int first_player, int second_player)
-{
-	
-	pthread_t t;
-	pthread_create(&t, NULL, game_init, NULL);
-}
-
-static void
-game_accept_handler(int fd, short what, void *arg)
-{
-	struct sockaddr_in client_addr;
-	uint32_t addr_len;
-	SNAKE_DEBUG("Client connected");
-	accept(fd, (struct sockaddr*)&client_addr, 
-		&addr_len);
-		
-	spawn_game(0, 0);
-}
-
-static void
-init_game_socket()
-{
-    struct sockaddr_in game_addr;
-    struct hostent* host_info_ptr; 
-    long host_address;
-    int reuse  = 1;
-	SNAKE_DEBUG("Creating game socket");
-    if ((game_sock = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
-    {
-        SNAKE_ERROR("Failed to open socket");
-        exit(EXIT_FAILURE);
-    }
-        
-    host_info_ptr = gethostbyname(server_host_name);
-    memcpy(&host_address, host_info_ptr->h_addr, 
-		host_info_ptr->h_length);
-		
-    memset(&game_addr, 0, sizeof(game_addr));
-    game_addr.sin_family = AF_INET;
-    game_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    game_addr.sin_port = htons(server_port + 2);
-   
-    if (bind(game_sock, (struct sockaddr *)&game_addr,
-		sizeof(game_addr)) < 0)
-    {
-        SNAKE_ERROR("Can't bind");
-        exit(EXIT_FAILURE);
-    }
-    
-     if (listen(game_sock, 5) < 0)
-    {
-        SNAKE_ERROR("Can't bind");
-        exit(EXIT_FAILURE);
-    }
-    
-    setsockopt(game_sock, SOL_SOCKET, SO_REUSEADDR, &reuse,
-		sizeof(reuse));
-		 
-    setnonblock(game_sock);
-    SNAKE_DEBUG("Waiting for game connections on %s:%d",  server_host_name, server_port  + 2);
-    event_set(&game_accept_event, game_sock, 
-		EV_READ | EV_PERSIST, game_accept_handler, 
-		&game_accept_event);
-		
-	event_add(&game_accept_event, NULL);
-}
-
-int 
-setnonblock(int fd)
-{
-  int flags;
-
-  flags = fcntl(fd, F_GETFL);
-  flags |= O_NONBLOCK;
-  fcntl(fd, F_SETFL, flags);
-  
-  return flags;
-}
-

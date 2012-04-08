@@ -32,8 +32,6 @@
 #include "snake-proto.h"
 #include "snake-game.h"
 
-#define SNAKE_SERVER_GET_NICK "GET: nick"
-#define SNAKE_SERVER_GET_COLOR "GET: color"
 
-
-
+void
+init_game_socket(const char *host, uint32_t port);
