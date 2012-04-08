@@ -34,7 +34,7 @@ game_create(uint16_t width, uint16_t height)
 void
 game_dispose(Game* game)
 {
-	list_free_all(game->players);
+	list_free_all_with(game->players, FREE_FUNC(player_dispose));
     free(game);
 }
 

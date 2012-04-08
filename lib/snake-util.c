@@ -122,9 +122,53 @@ list_free(List* head, void *data)
 }
 
 List* 
+list_free_with(List* head, void *data, free_func f)
+{
+	List *current = NULL;
+	List *previous = NULL;
+	
+	if (head == NULL)
+	{
+		return NULL;
+	}
+	
+	current = head;
+	
+	while(current->data != data)
+	{
+		previous = current;
+		current = current->next;
+	}
+	
+	if (current == NULL)
+	{
+		return NULL;
+	} 
+	else if (current == head)
+	{
+		head = current->next;
+	}else
+	{
+		previous->next = current->next;
+	}
+	
+	f(current->data);
+	free(current);
+	return head;
+}
+
+List* 
 list_free_all(List* head)
 {
 	while((head = list_free(head, head->data)));
+	
+	return NULL;
+}
+
+List* 
+list_free_all_with(List* head, free_func f)
+{
+	while((head = list_free_with(head, head->data, f)));
 	
 	return NULL;
 }

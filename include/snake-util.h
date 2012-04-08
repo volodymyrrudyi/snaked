@@ -22,6 +22,11 @@
 #include <stdlib.h>
 #include "snake-types.h"
 
+
+typedef void (*free_func)(void *);
+
+#define FREE_FUNC(x) (free_func)x
+
 struct _List
 {
 	void* data;
@@ -53,10 +58,22 @@ List*
 list_free(List* head, void *data);
 
 /*
+ * Removes element from list and frees its data with given destructor
+ */
+List* 
+list_free_with(List* head, void *data, free_func f);
+
+/*
  * Removes all elements and frees their data
  */
 List* 
 list_free_all(List* head);
+
+/*
+ * Removes all elements and frees their data with given destructor
+ */
+List* 
+list_free_all_with(List* head, free_func f);
 
 /*
  * Finds element in a list and returns pointer to it
