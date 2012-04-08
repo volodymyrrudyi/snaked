@@ -30,7 +30,6 @@ struct _Player
     uint8_t is_alive;
     uint32_t points;
     SnakeSection *snake_head;
-    int client_socket;
 };
 
 Player*
