@@ -126,34 +126,9 @@ read_handler(int fd, short what,  void *arg)
 
 void spawn_game(int first_player, int second_player)
 {
-	int first_client_socket = 0;
-	int second_client_socket = 0;	
-	Game *game = game_create(128, 128);
-	char nickname_buffer[256];
-	// Socket init here
-	
-	SNAKE_DEBUG("Requesting nickname from first client");
-	write(first_client_socket, SNAKE_SERVER_GET_NICK, 
-		strlen(SNAKE_SERVER_GET_NICK) + 1);
-		
-	SNAKE_DEBUG("Reading nickname from first client");	
-	read(first_client_socket, nickname_buffer, strlen(nickname_buffer) + 1); 
-	
-	game_add_player(game, first_client_socket, nickname_buffer);
-		
-	SNAKE_DEBUG("Requesting nickname from first client");
-	write(second_client_socket, 
-	SNAKE_SERVER_GET_NICK, strlen(SNAKE_SERVER_GET_NICK) + 1);
-		
-	SNAKE_DEBUG("Reading nickname from first client");	
-	read( second_client_socket, nickname_buffer, 
-		strlen(nickname_buffer) + 1); 
-		
-	game_add_player(game, second_client_socket, nickname_buffer);
 	
 	pthread_t t;
-	
-	pthread_create(&t, NULL, game_init, (void*)game);
+	pthread_create(&t, NULL, game_init, NULL);
 }
 
 static void

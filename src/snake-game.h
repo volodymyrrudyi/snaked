@@ -61,13 +61,6 @@ Game*
 game_create(uint16_t width, uint16_t height);
 
 /*
-    Creates new player with specified nickname and returns pointer to
-    created player object.
-*/
-Player*
-game_add_player(Game *game, int client_socket, const char *nickname);
-
-/*
     Disposes game object and frees all resources.
 */
 void

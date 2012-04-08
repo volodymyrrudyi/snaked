@@ -32,22 +32,6 @@ game_create(uint16_t width, uint16_t height)
     return new_game;
 }
 
-Player*
-game_add_player(Game *game, int client_socket, const char *nickname)
-{
-    game->player_count += 1;
-    game->players = (Player**)realloc(game->players, 
-		sizeof(Player*)*game->player_count);
-    game->players[game->player_count - 1] = 
-		(Player*)malloc(sizeof(Player));
-    game->players[game->player_count - 1]->nickname = 
-		(char*)malloc(sizeof(char) * strlen(nickname) + 1);
-    game->players[game->player_count - 1]->client_socket = client_socket;
-    strcpy(game->players[game->player_count - 1]->nickname, nickname);
-
-    return game->players[game->player_count - 1];
-}
-
 void
 game_dispose(Game* game)
 {
