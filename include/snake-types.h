@@ -23,10 +23,9 @@ typedef uint32_t BOOL;
 #define TRUE 1
 #define FALSE 0
 
-enum _ActionType
+enum _UpdateType
 {
-    Movement,
-    Exit
+	RecalculatePosition
 };
 
 enum _Direction
@@ -48,12 +47,11 @@ enum _CellType
 
 typedef struct _List List;
 typedef struct _Game Game;
-typedef struct _Action Action;
 typedef struct _Field Field;
 typedef struct _Cell Cell;
 typedef struct _Player Player;
 typedef struct _SnakeSection SnakeSection;
-typedef enum _ActionType ActionType;
+typedef enum _UpdateType UpdateType;
 typedef enum _CellType CellType;
 typedef enum _Direction Direction;
 

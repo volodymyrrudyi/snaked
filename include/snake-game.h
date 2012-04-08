@@ -22,18 +22,7 @@
 #include "snake-types.h"
 #include "snake-field.h"
 #include "snake-player.h"
-
-/*
-    Action contains information about events that are received from the user.
-    According to the received action, user can change it's position or exit game.
-*/
-struct _Action
-{
-    ActionType type;
-    /* Amount of bytes in data buffer*/
-    uint32_t data_size;
-    char *data;
-};
+#include "snake-util.h"
 
 /*
     Game object that stores all information about specified game. This info
@@ -43,8 +32,7 @@ struct _Action
 struct _Game
 {
     Field *field;
-    Player **players;
-    uint16_t player_count;
+    List *players;
 };
 
 /*
@@ -67,10 +55,10 @@ void
 game_dispose(Game* game);
 
 /*
-    Callback that is called every time game need to handle player action.
+    Callback that is called every time game need to update
 */
 void
-game_process_player_action(Game *game, Player *player, Action* action);
+game_update(Game *game, Player *player, UpdateType type, void *args);
 
 
 #endif

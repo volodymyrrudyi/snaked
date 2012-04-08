@@ -26,7 +26,6 @@ Game*
 game_create(uint16_t width, uint16_t height)
 {
     Game* new_game = (Game*)malloc(sizeof(Game));
-    new_game->player_count = 0;
     new_game->players = NULL;
     new_game->field = field_create(width, height);
     return new_game;
@@ -35,27 +34,11 @@ game_create(uint16_t width, uint16_t height)
 void
 game_dispose(Game* game)
 {
-	int player;
-    for(player = 0; player < game->player_count; player++)
-    {
-        player_dispose(game->players[player]);
-        field_dispose(game->field);
-    }
-
-    free(game->players);
+	list_free_all(game->players);
     free(game);
 }
 
 void
-game_process_player_action(Game *game, Player *player, Action* action)
+game_update(Game *game, Player *player, UpdateType type, void *args)
 {
-    switch(action->type)
-    {
-        case Movement:
-            break;
-        case Exit:
-            break;
-        default:
-            break;
-    }
 }
