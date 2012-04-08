@@ -6,5 +6,7 @@ set(SNAKE_CORE_HEADERS
 	${CMAKE_CURRENT_SOURCE_DIR}/snake-types.h
 	${CMAKE_CURRENT_SOURCE_DIR}/snake-proto.h
 	${CMAKE_CURRENT_SOURCE_DIR}/snake-log.h
+	${CMAKE_CURRENT_SOURCE_DIR}/snake-game.h
+	${CMAKE_CURRENT_SOURCE_DIR}/snake-util.h
 	PARENT_SCOPE
 )

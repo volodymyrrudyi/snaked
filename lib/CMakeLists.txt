@@ -4,5 +4,7 @@ set(SNAKE_CORE_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/snake-player.c
 	${CMAKE_CURRENT_SOURCE_DIR}/snake-field.c
 	${CMAKE_CURRENT_SOURCE_DIR}/snake-section.c
+	${CMAKE_CURRENT_SOURCE_DIR}/snake-game.c
+	${CMAKE_CURRENT_SOURCE_DIR}/snake-util.c
 	PARENT_SCOPE
 )

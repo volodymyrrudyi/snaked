@@ -46,6 +46,7 @@ enum _CellType
 };
 
 
+typedef struct _List List;
 typedef struct _Game Game;
 typedef struct _Action Action;
 typedef struct _Field Field;
