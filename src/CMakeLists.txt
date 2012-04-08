@@ -1,21 +1,14 @@
 set(SNAKED_SOURCES 
 	${SNAKED_SOURCES}
-	${CMAKE_CURRENT_SOURCE_DIR}/snake-field.c
 	${CMAKE_CURRENT_SOURCE_DIR}/snake-game.c
-	${CMAKE_CURRENT_SOURCE_DIR}/snake-section.c
 	${CMAKE_CURRENT_SOURCE_DIR}/snake-server.c
-	${CMAKE_CURRENT_SOURCE_DIR}/snake-player.c
 	${CMAKE_CURRENT_SOURCE_DIR}/main.c
 	PARENT_SCOPE
 )
 
 set(SNAKED_HEADERS
 	${SNAKED_HEADERS}
-	${CMAKE_CURRENT_SOURCE_DIR}/snake-field.h
 	${CMAKE_CURRENT_SOURCE_DIR}/snake-game.h
-	${CMAKE_CURRENT_SOURCE_DIR}/snake-section.h
 	${CMAKE_CURRENT_SOURCE_DIR}/snake-server.h
-	${CMAKE_CURRENT_SOURCE_DIR}/snake-player.h
-	${CMAKE_CURRENT_SOURCE_DIR}/snake-types.h
 	PARENT_SCOPE
 )
