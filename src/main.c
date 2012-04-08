@@ -25,7 +25,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include "snake-log.h"
+#include <snake-log.h>
 #include "snake-server.h"
 
 #define DEFAULT_PORT 5100
