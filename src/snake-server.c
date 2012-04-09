@@ -26,6 +26,12 @@ game_thread(void *param);
 int game_sock;
 struct event game_accept_event;
 
+pthread_mutex_t player_queue_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t game_list_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+List* game_list;
+List* player_info_queue;
+
 void
 init_game_socket(const char *host, uint32_t port)
 {
@@ -80,12 +86,17 @@ static void
 game_accept_handler(int fd, short what, void *arg)
 {
 	struct sockaddr_in client_addr;
+	ClientInfoPacket *client_info;
+	PlayerInfo *player_info;
 	uint32_t addr_len;
 	SNAKE_DEBUG("Client connected");
 	accept(fd, (struct sockaddr*)&client_addr, 
 		&addr_len);
 		
-	game_thread(NULL);
+	info = client_info_packet_read(fd);
+	player_info = (PlayerInfo*)malloc(sizeof(PlayerInfo));
+	player_info->player  = player_create();
+		
 }
 
 void game_thread(void *param)

@@ -28,10 +28,17 @@
 #include <signal.h>
 #include <event.h>
 
-#include "snake-log.h"
-#include "snake-proto.h"
-#include "snake-game.h"
+#include <snake-log.h>
+#include <snake-proto.h>
+#include <snake-game.h>
 
+#define MAX_PLAYERS 1
 
 void
 init_game_socket(const char *host, uint32_t port);
+
+typedef struct
+{
+	Player *player;
+	int socket;
+}PlayerInfo;
